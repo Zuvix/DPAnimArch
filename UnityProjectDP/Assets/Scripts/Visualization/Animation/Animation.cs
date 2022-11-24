@@ -129,27 +129,10 @@ namespace AnimArch.Visualization.Animating
 
                     StartCoroutine(ResolveCallFunct(((EXECommandCall) CurrentCommand).CreateOALCall()));
 
+                    CreateRelationInObjectDiagram((EXECommandCall)CurrentCommand);
 
-                    ObjectDiagram od = DiagramPool.Instance.ObjectDiagram;
-                    ObjectInDiagram start = null;
-                    ObjectInDiagram end = null;
-                    foreach (var objectInDiagram in od.Objects)
-                    {
-                        var className = objectInDiagram.Class.ClassInfo.Name;
-                        if (className.Equals(((EXECommandCall) CurrentCommand).CallerMethodInfo.ClassName))
-                        {
-                            start = objectInDiagram;
-                        }
-                        else if (className.Equals(((EXECommandCall) CurrentCommand).CalledClass))
-                        {
-                            end = objectInDiagram;
-                        }
-                    }
-
-                    od.AddRelation(start, end);
-
-                    // Debug.LogError(start.VariableName + " " + end.VariableName);
-                    yield return StartCoroutine(BarrierFillCheck());
+                     // Debug.LogError(start.VariableName + " " + end.VariableName);
+                     yield return StartCoroutine(BarrierFillCheck());
                 }
                 else if (CurrentCommand.GetType().Equals(typeof(EXECommandMultiCall)))
                 {
@@ -164,23 +147,7 @@ namespace AnimArch.Visualization.Animating
 
                     foreach (EXECommandCall callCommand in multicallCommand.CallCommands)
                     {
-                        ObjectDiagram od = DiagramPool.Instance.ObjectDiagram;
-                        ObjectInDiagram start = null;
-                        ObjectInDiagram end = null;
-                        foreach (var objectInDiagram in od.Objects)
-                        {
-                            var className = objectInDiagram.Class.ClassInfo.Name;
-                            if (className.Equals(callCommand.CallerMethodInfo.ClassName))
-                            {
-                                start = objectInDiagram;
-                            }
-                            else if (className.Equals(callCommand.CalledClass))
-                            {
-                                end = objectInDiagram;
-                            }
-                        }
-
-                        od.AddRelation(start, end);
+                        CreateRelationInObjectDiagram(callCommand);
                     }
 
                     // Debug.LogError(start.VariableName + " " + end.VariableName);
@@ -249,6 +216,32 @@ namespace AnimArch.Visualization.Animating
             */
             Debug.Log("Over");
             this.AnimationIsRunning = false;
+        }
+
+        private void CreateRelationInObjectDiagram(EXECommandCall command)
+        {
+            ObjectDiagram od = DiagramPool.Instance.ObjectDiagram;
+            ObjectInDiagram start = null;
+            ObjectInDiagram end = null;
+            foreach (var objectInDiagram in od.Objects)
+            {
+                var className = objectInDiagram.Class.ClassInfo.Name;
+                if (className.Equals(command.CallerMethodInfo.ClassName))
+                {
+                    start = objectInDiagram;
+                }
+                else if (className.Equals(command.CalledClass))
+                {
+                    end = objectInDiagram;
+                }
+            }
+
+            if (start == null || end == null || start == end)
+            {
+                return;
+            }
+
+            od.AddRelation(start, end);
         }
 
         private void ResolveCreateObject(string className, string varName, CDClassInstance instance)
