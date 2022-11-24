@@ -21,8 +21,9 @@ namespace OALProgramControl
             }
             set
             {
+                this.CommandStack = new EXEExecutionStack();
                 _SuperScope = value;
-                CommandStack = new EXEExecutionStack();
+                _SuperScope.CommandStack = this.CommandStack;
                 CommandStack.Enqueue(_SuperScope);
             }
         }

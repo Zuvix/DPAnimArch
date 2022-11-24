@@ -34,53 +34,8 @@ namespace OALProgramControl
         }
         protected override Boolean Execute(OALProgram OALProgram)
         {
-            /*
-            this.OALProgram = OALProgram;
-            this.OALProgram.ThreadSyncer.RegisterThread((uint)this.Threads.Count);
-            EXEScopeParallel ParallelScope = this;
-            Boolean Success = true;
+            this.CommandStack.Fork(this.Threads);
 
-            lock (this.MyThreadEndSyncer)
-            {
-                this.ActiveThreadCount = this.Threads.Count;
-            }
-
-            OALProgram.ThreadSyncer.UnregisterThread();
-
-            foreach (EXEScope ThreadScope in this.Threads)
-            {
-                new Thread(() =>
-                {
-                    Thread.CurrentThread.IsBackground = false;
-
-                    Boolean MySuccess = ThreadScope.SynchronizedExecute(OALProgram, ParallelScope);
-
-                    OALProgram.ThreadSyncer.UnregisterThread();
-
-                    lock (ParallelScope.MyThreadEndSyncer)
-                    {
-                        Success &= MySuccess;
-                        ParallelScope.ActiveThreadCount--;
-                        if (ParallelScope.ActiveThreadCount == 0)
-                        {
-                            Monitor.PulseAll(this.MyThreadEndSyncer);
-                        }
-                    }
-                }).Start();
-            }
-
-            lock (this.MyThreadEndSyncer)
-            {
-                while (this.ActiveThreadCount > 0)
-                {
-                    Monitor.Wait(this.MyThreadEndSyncer);
-                }
-            }
-
-            OALProgram.ThreadSyncer.RegisterThread(1);
-
-            return Success;
-            */
             return true;
         }
 

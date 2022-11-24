@@ -151,6 +151,41 @@ namespace AnimArch.Visualization.Animating
                     // Debug.LogError(start.VariableName + " " + end.VariableName);
                     yield return StartCoroutine(BarrierFillCheck());
                 }
+                else if (CurrentCommand.GetType().Equals(typeof(EXECommandMultiCall)))
+                {
+                    EXECommandMultiCall multicallCommand = (EXECommandMultiCall)CurrentCommand;
+                    BarrierSize = multicallCommand.CallCommands.Count;
+                    CurrentBarrierFill = 0;
+
+                    foreach (EXECommandCall callCommand in multicallCommand.CallCommands)
+                    {
+                        StartCoroutine(ResolveCallFunct(callCommand.CreateOALCall()));
+                    }
+
+                    foreach (EXECommandCall callCommand in multicallCommand.CallCommands)
+                    {
+                        ObjectDiagram od = DiagramPool.Instance.ObjectDiagram;
+                        ObjectInDiagram start = null;
+                        ObjectInDiagram end = null;
+                        foreach (var objectInDiagram in od.Objects)
+                        {
+                            var className = objectInDiagram.Class.ClassInfo.Name;
+                            if (className.Equals(callCommand.CallerMethodInfo.ClassName))
+                            {
+                                start = objectInDiagram;
+                            }
+                            else if (className.Equals(callCommand.CalledClass))
+                            {
+                                end = objectInDiagram;
+                            }
+                        }
+
+                        od.AddRelation(start, end);
+                    }
+
+                    // Debug.LogError(start.VariableName + " " + end.VariableName);
+                    yield return StartCoroutine(BarrierFillCheck());
+                }
                 else if (CurrentCommand.GetType() == typeof(EXECommandQueryCreate))
                 {
                     string ReferencingVariableName = ((EXECommandQueryCreate) CurrentCommand).ReferencingVariableName;

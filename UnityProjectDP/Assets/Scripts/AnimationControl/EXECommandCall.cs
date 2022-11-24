@@ -92,7 +92,8 @@ namespace OALProgramControl
             }
 
             MethodCode.SetSuperScope(null);
-            OALProgram.CommandStack.Enqueue(MethodCode);
+            MethodCode.CommandStack = this.CommandStack;
+            this.CommandStack.Enqueue(MethodCode);
             MethodCode.AddVariable(new EXEReferencingVariable("self", CalledClass, CalledID));//
 
             for (int i = 0; i < this.Parameters.Count; i++)

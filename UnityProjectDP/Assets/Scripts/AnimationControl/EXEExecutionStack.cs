@@ -10,11 +10,13 @@ namespace OALProgramControl
     {
         private LinkedList<EXECommand> CommandsToBeCalled;
         private Stack<EXECommand> CommandsThatHaveBeenCalled;
+        private EXEExecutionStackParallel ParallelChild;
 
         public EXEExecutionStack()
         {
             this.CommandsToBeCalled = new LinkedList<EXECommand>();
             this.CommandsThatHaveBeenCalled = new Stack<EXECommand>();
+            this.ParallelChild = null;
         }
 
         public void Enqueue(EXECommand Command)
@@ -42,12 +44,43 @@ namespace OALProgramControl
 
         public bool HasNext()
         {
+            if (ParallelChild != null)
+            {
+                if (ParallelChild.HasNext())
+                {
+                    return true;
+                }
+                else
+                {
+                    ParallelChild = null;
+                }
+            }
+
             return CommandsToBeCalled.Any();
         }
 
         public EXECommand Next()
         {
-            EXECommand Result = CommandsToBeCalled.First.Value;
+            EXECommand Result;
+
+            if (ParallelChild != null)
+            {
+                if (ParallelChild.HasNext())
+                {
+                    return ParallelChild.Next();
+                }
+                else
+                {
+                    ParallelChild = null;
+                }
+            }
+
+            if (!HasNext())
+            {
+                return null;
+            }
+
+            Result = CommandsToBeCalled.First.Value;
             CommandsToBeCalled.RemoveFirst();
 
             CommandsThatHaveBeenCalled.Push(Result);
@@ -55,18 +88,9 @@ namespace OALProgramControl
             return Result;
         }
 
-        public bool HasPrevious()
+        public void Fork(List<EXEScope> threads)
         {
-            return CommandsThatHaveBeenCalled.Any();
-        }
-
-        public EXECommand Previous()
-        {
-            EXECommand Result = CommandsThatHaveBeenCalled.Pop();
-
-            CommandsToBeCalled.AddFirst(Result);
-
-            return Result;
+            this.ParallelChild = new EXEExecutionStackParallel(threads);
         }
     }
 }

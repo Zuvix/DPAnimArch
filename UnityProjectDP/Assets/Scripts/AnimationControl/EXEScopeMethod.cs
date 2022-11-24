@@ -12,7 +12,7 @@ namespace OALProgramControl
         }
         protected override Boolean Execute(OALProgram OALProgram)
         {
-            AddCommandsToStack(OALProgram, this.Commands);
+            AddCommandsToStack(this.Commands);
             return true;
         }
 

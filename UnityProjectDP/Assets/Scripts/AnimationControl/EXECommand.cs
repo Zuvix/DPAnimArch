@@ -5,6 +5,7 @@ namespace OALProgramControl
     public abstract class EXECommand
     {
         protected EXEScope SuperScope { get; set; }
+        public EXEExecutionStack CommandStack { get; set; } = null;
 
         public Boolean PerformExecution(OALProgram OALProgram)
         {

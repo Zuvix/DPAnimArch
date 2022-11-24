@@ -40,14 +40,14 @@ namespace OALProgramControl
 
         protected override Boolean Execute(OALProgram OALProgram)
         {
-            AddCommandsToStack(OALProgram, this.Commands);
+            AddCommandsToStack(this.Commands);
             return true;
         }
 
-        protected void AddCommandsToStack(OALProgram OALProgram, List<EXECommand> Commands)
+        protected void AddCommandsToStack(List<EXECommand> Commands)
         {
-            Commands.ForEach(command => command.SetSuperScope(this));
-            OALProgram.CommandStack.Enqueue(Commands);
+            Commands.ForEach(command => { command.SetSuperScope(this); command.CommandStack = this.CommandStack; });
+            this.CommandStack.Enqueue(Commands);
         }
 
         public Dictionary<String, String> GetStateDictRecursive()

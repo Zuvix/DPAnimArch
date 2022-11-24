@@ -50,7 +50,7 @@ namespace OALProgramControl
                 {
                     IterationCounter++;
                     OALProgram.CommandStack.Enqueue(this);
-                    AddCommandsToStack(OALProgram, this.Commands);
+                    AddCommandsToStack(this.Commands);
                     this.ClearVariables();
                 }
             }

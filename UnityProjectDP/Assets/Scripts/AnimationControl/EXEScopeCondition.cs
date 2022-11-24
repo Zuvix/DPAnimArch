@@ -96,7 +96,7 @@ namespace OALProgramControl
 
             if (IfConditionResult)
             {
-                AddCommandsToStack(OALProgram, this.Commands);
+                AddCommandsToStack(this.Commands);
                 AScopeWasExecuted = true;
             }
 
