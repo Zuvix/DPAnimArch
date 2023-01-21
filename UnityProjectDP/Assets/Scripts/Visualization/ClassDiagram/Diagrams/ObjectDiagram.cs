@@ -83,10 +83,10 @@ namespace AnimArch.Visualization.Diagrams
         {
         }
 
-        public Graph CreateGraph()
+        private Graph CreateGraph()
         {
             ResetDiagram();
-            var go = GameObject.Instantiate(DiagramPool.Instance.graphPrefab);
+            var go = Instantiate(DiagramPool.Instance.graphPrefab);
             graph = go.GetComponent<Graph>();
             return graph;
         }

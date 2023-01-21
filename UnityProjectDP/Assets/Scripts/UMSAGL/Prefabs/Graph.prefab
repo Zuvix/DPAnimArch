@@ -72,7 +72,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
+  m_SizeDelta: {x: 1, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &114569717108916402
 MonoBehaviour:
@@ -89,9 +89,9 @@ MonoBehaviour:
   nodePrefab: {fileID: 1226358218867430, guid: a6ff44ea34772e341bd52a30b491e1f7, type: 3}
   edgePrefab: {fileID: 1786522367462340, guid: 02b82085b7a6c4c49b9b89739fc6ed04, type: 3}
   factor: 2
-  margins: {x: 100, y: 100}
+  margins: {x: 300, y: 300}
   units: {fileID: 0}
-  panel: {fileID: 0}
+  panel: {fileID: 5839517624281850263}
 --- !u!223 &223424584496021778
 Canvas:
   m_ObjectHideFlags: 0

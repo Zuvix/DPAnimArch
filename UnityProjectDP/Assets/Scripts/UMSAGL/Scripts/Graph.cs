@@ -36,8 +36,9 @@ public class Graph : MonoBehaviour
         {
             graph.UpdateBoundingBox();
             var size = graph.BoundingBox.Size;
-            return new Vector2(ToUnitySpace((float) size.Width) + margins.x,
-                ToUnitySpace((float) size.Height) + margins.y);
+            var x = Math.Max(ToUnitySpace((float) size.Width) + margins.x, 2000);
+            var y = Math.Max(ToUnitySpace((float) size.Height) + margins.y, 1000);
+            return new Vector2(x, y);
         }
     }
 
