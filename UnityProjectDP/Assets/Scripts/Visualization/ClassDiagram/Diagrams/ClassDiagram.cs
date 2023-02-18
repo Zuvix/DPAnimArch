@@ -1,144 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using OALProgramControl;
 using AnimArch.Extensions;
-using AnimArch.Visualization.Animating;
 
 namespace AnimArch.Visualization.Diagrams
 {
     public class ClassDiagram : Diagram
     {
         public Graph graph;
-        public List<ClassInDiagram> Classes { get; private set; }
-        public List<RelationInDiagram> Relations { get; private set; }
+        public List<ClassInDiagram> Classes { get; } = new();
+        public List<RelationInDiagram> Relations { get; } = new();
 
         //Awake is called before the first frame and before Start()
         private void Awake()
         {
-            Classes = new List<ClassInDiagram>();
             DiagramPool.Instance.ClassDiagram = this;
-            ResetDiagram();
-        }
-
-        private void ResetDiagram()
-        {
-            // Get rid of already rendered classes in diagram.
-            if (Classes != null)
-            {
-                foreach (var Class in Classes)
-                {
-                    Destroy(Class.VisualObject);
-                }
-
-                Classes.Clear();
-            }
-
-            Classes = new List<ClassInDiagram>();
-
-            // Get rid of already rendered relations in diagram.
-            if (Relations != null)
-            {
-                foreach (var relation in Relations)
-                {
-                    Destroy(relation.VisualObject);
-                }
-
-                Relations.Clear();
-            }
-
-            Relations = new List<RelationInDiagram>();
-
-            if (graph != null)
-            {
-                Destroy(graph.gameObject);
-                graph = null;
-            }
-
-            OALProgram.Instance.Reset();
-            ClassEditor.Instance.ResetGraph();
-
-            AnimationData.Instance.ClearData();
-        }
-
-        public void LoadDiagram()
-        {
-            CreateGraph();
-            var k = 0;
-            // A trick used to skip empty diagrams in XMI file from EA
-            while (Classes.Count < 1 && k < 10)
-            {
-                ClassEditor.ParseData();
-                k++;
-                AnimationData.Instance.diagramId++;
-            }
-
-            RenderRelations();
-            RenderClassesManual();
-        }
-
-        public Graph CreateGraph()
-        {
-            ResetDiagram();
-            var go = Instantiate(DiagramPool.Instance.graphPrefab);
-            graph = go.GetComponent<Graph>();
-            graph.nodePrefab = DiagramPool.Instance.classPrefab;
-            return graph;
-        }
-
-        //Auto arrange objects in space
-        public void RenderClassesAuto()
-        {
-            graph.Layout();
-        }
-
-        //Set layout as close as possible to EA layout
-        private void RenderClassesManual()
-        {
-            foreach (var classInDiagram in Classes)
-            {
-                var x = classInDiagram.ParsedClass.Left * 1.25f;
-                var y = classInDiagram.ParsedClass.Top * 1.25f;
-                var z = classInDiagram.VisualObject.GetComponent<RectTransform>().position.z;
-                ClassEditor.SetPosition(classInDiagram.ParsedClass.Name, new Vector3(x, y, z), false);
-            }
-        }
-
-        //Create GameObjects from the parsed data stored in list of Classes and Relations
-        private void RenderRelations()
-        {
-            //Render Relations between classes
-            foreach (var rel in Relations)
-            {
-                var prefab = rel.ParsedRelation.PrefabType;
-                if (prefab == null)
-                {
-                    prefab = DiagramPool.Instance.associationNonePrefab;
-                }
-
-                var startingClass = FindClassByName(rel.ParsedRelation.FromClass)?.VisualObject;
-                var finishingClass = FindClassByName(rel.ParsedRelation.ToClass)?.VisualObject;
-                if (startingClass != null && finishingClass != null)
-                {
-                    var edge = graph.AddEdge(startingClass, finishingClass, prefab);
-
-                    rel.VisualObject = edge;
-                    // Quickfix
-
-                    if (edge.gameObject.transform.childCount > 0)
-                    {
-                        StartCoroutine(QuickFix(edge.transform.GetChild(0).gameObject));
-                    }
-                }
-                else
-                {
-                    Debug.LogError
-                    (
-                        $"Can't find specified Edge \"{rel.ParsedRelation.FromClass}\"->\"{rel.ParsedRelation.ToClass}\""
-                    );
-                }
-            }
+            MainEditor.ClearDiagram();
         }
 
         public ClassInDiagram FindClassByName(string className)
@@ -160,7 +38,7 @@ namespace AnimArch.Visualization.Diagrams
             var _class = FindClassByName(className);
 
             return _class?.ParsedClass.Methods
-                .Where(_ => string.Equals(methodName, _class.ParsedClass.Name))
+                .Where(x => string.Equals(methodName, x.Name))
                 .IfMoreThan
                 (
                     _ => Debug.LogError
@@ -176,7 +54,7 @@ namespace AnimArch.Visualization.Diagrams
             var _class = FindClassByName(className);
 
             return _class?.ParsedClass.Attributes
-                .Where(_ => string.Equals(attributeName, _class.ParsedClass.Name))
+                .Where(x => Equals(attributeName, x.Name))
                 .IfMoreThan
                 (
                     _ => Debug.LogError
@@ -194,11 +72,11 @@ namespace AnimArch.Visualization.Diagrams
             return g;
         }
 
-        public GameObject FindEdge(string classA, string classB)
+        public GameObject FindEdge(string fromClass, string toClass)
         {
             GameObject result = null;
 
-            var rel = OALProgram.Instance.RelationshipSpace.GetRelationshipByClasses(classA, classB);
+            var rel = OALProgram.Instance.RelationshipSpace.GetRelationshipByClasses(fromClass, toClass);
             if (rel != null)
             {
                 result = FindEdge(rel.RelationshipName);
@@ -228,14 +106,6 @@ namespace AnimArch.Visualization.Diagrams
                     relationInDiagram => relationInDiagram.ParsedRelation.FromClass, "");
         }
 
-        //Fix used to minimalize relation displaying bug
-        private static IEnumerator QuickFix(GameObject g)
-        {
-            yield return new WaitForSeconds(0.05f);
-            g.SetActive(false);
-            yield return new WaitForSeconds(0.05f);
-            g.SetActive(true);
-        }
 
         public IEnumerable<Class> GetClassList()
         {

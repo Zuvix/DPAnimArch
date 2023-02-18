@@ -4,14 +4,19 @@ using UnityEngine;
 
 namespace AnimArch.Visualization.UI
 {
-    public class MethodPopUpManager : MonoBehaviour
+    public class MethodManager : MonoBehaviour
     {
         public TMP_Text classTxt;
         public TMP_Text methodTxt;
-        
+
         public void OpenMethodEditPopUp()
         {
-            ClassEditor.Instance.mtdPopUp.ActivateCreation(classTxt, methodTxt);
+            UIEditorManager.Instance.methodPopUp.ActivateCreation(classTxt, methodTxt);
+        }
+
+        public void DeleteMethod()
+        {
+            MainEditor.DeleteMethod(classTxt.text, name);
         }
     }
 }
