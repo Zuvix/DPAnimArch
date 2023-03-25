@@ -96,11 +96,9 @@ namespace AnimArch.Visualization.Animating
                 {
                     Destroy(this.gameObject);
                 }
-
             }
-
-
         }
+        
         IEnumerator DelayedDestroy(float delayedTime)
         {
             float time = 0;

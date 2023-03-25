@@ -438,9 +438,9 @@ namespace AnimArch.Visualization.UI
                     }
                 }
             }
-
+            
             CDClassInstance instance = OALProgram.Instance.ExecutionSpace.getClassByName(name).CreateClassInstance();
-            ObjectInDiagram od = DiagramPool.Instance.ObjectDiagram.AddObject(name, "client", instance);
+            ObjectInDiagram od = DiagramPool.Instance.ObjectDiagram.AddObjectInDiagram(name, "client", instance);
             DiagramPool.Instance.ObjectDiagram.AddObject(od);
             DiagramPool.Instance.ObjectDiagram.ShowObject(od);
             DiagramPool.Instance.RelationsClassToObject[0].Show();

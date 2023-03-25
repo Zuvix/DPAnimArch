@@ -80,7 +80,7 @@ namespace AnimArch.Visualization.UI
         {
             base.Deactivate();
             dropdown.value = 0;
-            customTypeField.text = "";
+            // customTypeField.text = "";
             isArray.isOn = false;
         }
     }

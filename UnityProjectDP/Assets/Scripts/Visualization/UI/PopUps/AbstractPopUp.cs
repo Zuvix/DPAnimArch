@@ -12,8 +12,8 @@ namespace AnimArch.Visualization.UI
 
         private void SetButtonsActive(bool active)
         {
-            DiagramPool.Instance.ClassDiagram.graph.GetComponentsInChildren<GraphicRaycaster>()
-                .ForEach(x => x.enabled = active);
+            // DiagramPool.Instance.ClassDiagram.graph.GetComponentsInChildren<GraphicRaycaster>()
+                // .ForEach(x => x.enabled = active);
             var parent = transform.parent.parent;
             parent.Find("RightMenu").GetComponentsInChildren<Button>()
                 .ForEach(x => x.enabled = active);

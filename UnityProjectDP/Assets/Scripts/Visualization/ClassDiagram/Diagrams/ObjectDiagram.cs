@@ -69,9 +69,6 @@ namespace AnimArch.Visualization.Diagrams
         public void LoadDiagram()
         {
             CreateGraph();
-
-            GenerateObjects();
-
             //Generate UI objects displaying the diagram
             Generate();
 
@@ -80,10 +77,6 @@ namespace AnimArch.Visualization.Diagrams
             //AutoLayout();
 
             graph.transform.position = new Vector3(0, 0, 800);
-        }
-
-        private void GenerateObjects()
-        {
         }
 
         private Graph CreateGraph()
@@ -170,7 +163,7 @@ namespace AnimArch.Visualization.Diagrams
             (
                 InterGraphLine.GetComponent<InterGraphRelation>()
             );
-            InterGraphLine.GetComponent<InterGraphRelation>().Hide();
+            // InterGraphLine.GetComponent<InterGraphRelation>().Hide();
         }
 
         public void AddObject(ObjectInDiagram Object)
@@ -186,7 +179,7 @@ namespace AnimArch.Visualization.Diagrams
             graph.Layout();
         }
 
-        public ObjectInDiagram AddObject(string className, string variableName, CDClassInstance instance)
+        public ObjectInDiagram AddObjectInDiagram(string className, string variableName, CDClassInstance instance)
         {
             ObjectInDiagram objectInDiagram = new ObjectInDiagram
             {
@@ -198,24 +191,39 @@ namespace AnimArch.Visualization.Diagrams
             return objectInDiagram;
         }
 
-        public void AddRelation(string start, long end, string endClass, string type)
+        public void AddRelation(long callerInstanceId, string callerClassName, long calledInstanceId,
+            string calledClassName, string type)
         {
-            if (start.Equals(endClass))
+            if (callerClassName.Equals(calledClassName) || callerInstanceId == calledInstanceId)
             {
                 return;
             }
 
-            CDClass startClass = OALProgram.Instance.ExecutionSpace.getClassByName(start);
-            foreach (var startClassInstance in startClass.Instances)
+            if (callerInstanceId == -1)
             {
-                ObjectRelation relation = new ObjectRelation(graph, startClassInstance.UniqueID,
-                    end, type, "R" + Relations.Count);
+                CDClass startClass = OALProgram.Instance.ExecutionSpace.getClassByName(callerClassName);
+                foreach (var startClassInstance in startClass.Instances)
+                {
+                    ObjectRelation relation = new ObjectRelation(graph, startClassInstance.UniqueID,
+                        calledInstanceId, type, "R" + Relations.Count);
+                    if (!ContainsObjectRelation(relation))
+                    {
+                        Relations.Add(relation);
+                        relation.Generate();
+                    }
+                }
+            }
+            else
+            {
+                ObjectRelation relation = new ObjectRelation(graph, callerInstanceId,
+                    calledInstanceId, type, "R" + Relations.Count);
                 if (!ContainsObjectRelation(relation))
                 {
                     Relations.Add(relation);
                     relation.Generate();
                 }
             }
+            
         }
 
         public ObjectInDiagram FindByID(long instanceID)
