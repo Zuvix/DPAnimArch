@@ -6,9 +6,9 @@ namespace OALProgramControl
 {
     public class EXECommandAddingToList : EXECommand
     {
-        private String VariableName { get; }
-        private String AttributeName { get; }
-        private EXEASTNode Item { get; }
+        public String VariableName { get; }
+        public String AttributeName { get; }
+        public EXEASTNode Item { get; }
 
         public EXECommandAddingToList(String VariableName, String AttributeName, EXEASTNode Item)
         {

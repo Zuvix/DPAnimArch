@@ -21,7 +21,7 @@ namespace OALProgramControl
         {
             this.SuperScope = SuperScope;
         }
-        protected EXEScope GetTopLevelScope()
+        public EXEScope GetTopLevelScope()
         {
             EXEScope CurrentScope = this.SuperScope;
 

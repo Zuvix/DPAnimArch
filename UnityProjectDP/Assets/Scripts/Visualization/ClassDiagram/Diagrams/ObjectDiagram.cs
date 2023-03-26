@@ -247,7 +247,33 @@ namespace AnimArch.Visualization.Diagrams
                 return false;
             }
 
+            // if (objectInDiagram.Instance.GetAttributeValue(attr))
+            // {
+            //     
+            // }
             objectInDiagram.Instance.SetAttribute(attr, expr);
+            var background = objectInDiagram.VisualObject.transform.Find("Background");
+            var attributes = background.Find("Attributes");
+            attributes.GetComponent<TextMeshProUGUI>().text = "";
+
+            //Attributes
+            foreach (string AttributeName in objectInDiagram.Instance.State.Keys)
+            {
+                attributes.GetComponent<TextMeshProUGUI>().text +=
+                    AttributeName + " = " + objectInDiagram.Instance.State[AttributeName] + "\n";
+            }
+
+            return true;
+        }
+        
+        public bool AddListAttributeValue(long instanceID, string attr, string expr)
+        {
+            ObjectInDiagram objectInDiagram = FindByID(instanceID);
+            if (objectInDiagram == null)
+            {
+                return false;
+            }
+
             var background = objectInDiagram.VisualObject.transform.Find("Background");
             var attributes = background.Find("Attributes");
             attributes.GetComponent<TextMeshProUGUI>().text = "";

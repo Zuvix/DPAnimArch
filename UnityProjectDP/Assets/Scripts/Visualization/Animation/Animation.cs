@@ -117,29 +117,20 @@ namespace AnimArch.Visualization.Animating
             int i = 0;
 
             bool Success = true;
-            long prev_instance_id = -1;
-            string prev_called_class = "";
             while (Success && Program.CommandStack.HasNext())
             {
                 EXECommand CurrentCommand = Program.CommandStack.Next();
                 bool ExecutionSuccess = CurrentCommand.PerformExecution(Program);
 
                 Debug.Log("Command " + i++ + ". Success: " + ExecutionSuccess +
-                          ". Command type: " + CurrentCommand.GetType().Name + " " + prev_instance_id + " " +
-                          prev_called_class);
+                          ". Command type: " + CurrentCommand.GetType().Name);
 
                 if (CurrentCommand.GetType() == typeof(EXECommandCall))
                 {
                     var exeCommandCall = (EXECommandCall) CurrentCommand;
                     long callerInstanceId = -1;
 
-                    if (prev_called_class.Equals(exeCommandCall.CallerMethodInfo.ClassName))
-                    {
-                        callerInstanceId = prev_instance_id;
-                    }
-
-                    var oalCall = exeCommandCall.CreateOALCall(prev_instance_id);
-                    StartCoroutine(ResolveCallFunct(oalCall));
+                    var oalCall = exeCommandCall.CreateOALCall();
                     BarrierSize = 1;
                     CurrentBarrierFill = 0;
 
@@ -147,18 +138,14 @@ namespace AnimArch.Visualization.Animating
                     var instanceId = CurrentCommand.GetSuperScope()
                         .FindReferencingVariableByName(referencingVariableName).ReferencedInstanceId;
 
-                    prev_instance_id = instanceId;
-                    prev_called_class = exeCommandCall.CalledClass;
-
                     objectDiagram.AddRelation(callerInstanceId, exeCommandCall.CallerMethodInfo.ClassName,
                         instanceId, exeCommandCall.CalledClass, "ASSOCIATION");
+                    StartCoroutine(ResolveCallFunct(oalCall));
 
                     yield return StartCoroutine(BarrierFillCheck());
                 }
                 else if (CurrentCommand.GetType() == typeof(EXECommandQueryCreate))
                 {
-                    prev_instance_id = -1;
-                    prev_called_class = "";
                     BarrierSize = 1;
                     CurrentBarrierFill = 0;
                     StartCoroutine(ResolveCreateObject(CurrentCommand));
@@ -166,9 +153,22 @@ namespace AnimArch.Visualization.Animating
                 }
                 else if (CurrentCommand.GetType() == typeof(EXECommandAssignment))
                 {
-                    prev_instance_id = -1;
-                    prev_called_class = "";
                     ResolveAssignment(CurrentCommand);
+                }
+                else if (CurrentCommand.GetType() == typeof(EXECommandAddingToList))
+                {
+                    var addingToList = (EXECommandAddingToList) CurrentCommand;
+                    
+                    if (addingToList.AttributeName == null) continue;
+
+                    var variableFrom = addingToList.GetSuperScope().FindReferencingVariableByName(addingToList.VariableName);
+                    var variableTo = addingToList.GetSuperScope().FindReferencingVariableByName(addingToList.Item.GetNodeValue());
+                    objectDiagram.AddRelation(variableFrom.ReferencedInstanceId, variableFrom.ClassName,
+                        variableTo.ReferencedInstanceId, variableTo.ClassName, "ASSOCIATION");
+                    
+                    objectDiagram.AddListAttributeValue(variableFrom.ReferencedInstanceId,
+                        addingToList.AttributeName, addingToList.Item.Evaluate(addingToList.GetSuperScope(), OALProgram.Instance.ExecutionSpace));
+
                 }
 
                 Success = Success && ExecutionSuccess;
@@ -185,7 +185,7 @@ namespace AnimArch.Visualization.Animating
 
             var variable = assignment.GetSuperScope().FindReferencingVariableByName(assignment.VariableName);
             objectDiagram.AddAttributeValue(variable.ReferencedInstanceId,
-                assignment.AttributeName, assignment.AssignedExpression.ToCode());
+                assignment.AttributeName, assignment.AssignedExpression.Evaluate(assignment.GetSuperScope(), OALProgram.Instance.ExecutionSpace));
         }
 
         private IEnumerator ResolveCreateObject(EXECommand currentCommand)
@@ -195,6 +195,7 @@ namespace AnimArch.Visualization.Animating
             var instanceId = currentCommand.GetSuperScope()
                 .FindReferencingVariableByName(referencingVariableName).ReferencedInstanceId;
 
+
             var variableClass = OALProgram.Instance.ExecutionSpace.getClassByName(className);
 
             var classInstance = variableClass.GetInstanceByID(instanceId);
@@ -203,7 +204,8 @@ namespace AnimArch.Visualization.Animating
             DiagramPool.Instance.ObjectDiagram.AddObject(objectInDiagram);
 
             var relation = FindInterGraphRelation(instanceId);
-
+            
+            
             #region Object creation animation
 
             int step = 0;
@@ -273,6 +275,9 @@ namespace AnimArch.Visualization.Animating
             IncrementBarrier();
 
             #endregion
+            
+            objectDiagram.AddRelation(-1, ((EXEScopeMethod)currentCommand.GetSuperScope()).MethodDefinition.ClassName,
+                instanceId, className, "ASSOCIATION");
         }
 
         private IEnumerator AnimateFillInterGraph(InterGraphRelation relation)
@@ -402,15 +407,6 @@ namespace AnimArch.Visualization.Animating
             bool flip = ownerOfRelation.Equals(calledClassName);
 
             LineFiller lf1 = newFiller1.GetComponent<LineFiller>();
-            if (Call.CallerInstanceId != -1)
-            {
-                var objectRelation =
-                    DiagramPool.Instance.ObjectDiagram.FindRelation(Call.CallerInstanceId, Call.CalledInstanceId)
-                        .GameObject;
-                lf1.StartCoroutine(lf1.AnimateFlow(objectRelation.GetComponent<UILineRenderer>().Points, false));
-            }
-            else
-            {
                 var classInDiagram = DiagramPool.Instance.ClassDiagram.FindClassByName(Call.CallerClassName);
                 foreach (var callerInstance in classInDiagram.ClassInfo.Instances)
                 {
@@ -419,7 +415,6 @@ namespace AnimArch.Visualization.Animating
                             .GameObject;
                     lf1.StartCoroutine(lf1.AnimateFlow(objectRelation.GetComponent<UILineRenderer>().Points, false));
                 }
-            }
 
             return lf.StartCoroutine(lf.AnimateFlow(edge.GetComponent<UILineRenderer>().Points, flip));
         }
@@ -468,12 +463,6 @@ namespace AnimArch.Visualization.Animating
 
         public void HighlightObjects(OALCall call, bool isToBeHighlighted)
         {
-            if (call.CallerInstanceId != -1)
-            {
-                HighlightObject(call.CallerInstanceId, isToBeHighlighted);
-                return;
-            }
-
             ClassInDiagram classByName = classDiagram.FindClassByName(call.CallerClassName);
 
             if (classByName == null)
@@ -557,12 +546,6 @@ namespace AnimArch.Visualization.Animating
 
         private void HighlightInstancesMethod(OALCall call, bool isToBeHighlighted)
         {
-            if (call.CallerInstanceId != -1)
-            {
-                HighlightObjectMethod(call.CallerMethodName, call.CallerInstanceId, isToBeHighlighted);
-                return;
-            }
-
             List<CDClassInstance> instances = classDiagram.FindClassByName(call.CallerClassName).ClassInfo.Instances;
             foreach (CDClassInstance cdClassInstance in instances)
             {
@@ -635,12 +618,6 @@ namespace AnimArch.Visualization.Animating
             }
             else
             {
-                if (Call.CallerInstanceId != -1)
-                {
-                    HighlightObjectRelation(Call.CallerInstanceId, Call.CalledInstanceId, isToBeHighlighted);
-                    return;
-                }
-
                 var classInDiagram = DiagramPool.Instance.ClassDiagram.FindClassByName(Call.CallerClassName);
                 foreach (var callerInstance in classInDiagram.ClassInfo.Instances)
                 {

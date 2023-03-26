@@ -207,7 +207,7 @@ namespace OALProgramControl
             return true;
         }
 
-        public OALCall CreateOALCall(long callerInstanceId)
+        public OALCall CreateOALCall()
         {
             MethodCallRecord _CallerMethodInfo = this.CallerMethodInfo;
             CDRelationship _RelationshipInfo = CallRelationshipInfo(_CallerMethodInfo.ClassName, this.CalledClass);
@@ -219,7 +219,6 @@ namespace OALProgramControl
                 IsSelfCall ? null : _RelationshipInfo.RelationshipName,
                 this.CalledClass,
                 this.CalledMethod,
-                callerInstanceId,
                 SuperScope.FindReferencingVariableByName(InstanceName).ReferencedInstanceId,
                 IsSelfCall
             );
