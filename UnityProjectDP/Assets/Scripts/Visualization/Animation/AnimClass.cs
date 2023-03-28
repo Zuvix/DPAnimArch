@@ -1,20 +1,23 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace AnimArch.Visualization.Animating
+[System.Serializable]
+public class AnimClass
 {
-    [System.Serializable]
-    public class AnimClass  //Filip
-    {
-        [SerializeField]
-        public string Name;
-        [SerializeField]
-        public List<AnimMethod> Methods;
+    [SerializeField]
+    public string Name;
+    [SerializeField]
+    public string SuperClass; //od ktorej dedi
+    [SerializeField]
+    public List<string> Attributes;
+    [SerializeField]
+    public List<AnimMethod> Methods;
 
-        public AnimClass(string Name)
-        {
-            this.Name = Name;
-            this.Methods = new List<AnimMethod>();
-        }
+    public AnimClass(string Name, string SuperClass, List<string> Attributes, List<AnimMethod> Methods)
+    {
+        this.Name = Name;
+        this.SuperClass = SuperClass;
+        this.Attributes = Attributes;
+        this.Methods = Methods;
     }
 }

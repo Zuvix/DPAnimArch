@@ -25,6 +25,10 @@ namespace AnimArch.Visualization.UI
         [SerializeField] private GameObject PanelInteractiveIntro;
         [SerializeField] private GameObject PanelInteractive;
         [SerializeField] private GameObject PanelMethod;
+        [SerializeField]
+        private TMP_InputField startClass;//
+        [SerializeField]
+        private TMP_InputField startMethod;//
         public bool isCreating = false;
         [SerializeField] private List<GameObject> methodButtons;
         [SerializeField] private TMP_Text ClassNameTxt;
@@ -100,6 +104,7 @@ namespace AnimArch.Visualization.UI
         public void InitializeAnim()
         {
             createdAnim = new Anim("");
+            createdAnim.Initialize();
         }
 
         public void StartAnimate()
@@ -271,6 +276,8 @@ namespace AnimArch.Visualization.UI
 
             scriptCode.GetComponent<CodeHighlighter>().RemoveColors();
             createdAnim.Code = scriptCode.text;
+            createdAnim.SetStartClassName(startClass.text);//
+            createdAnim.SetStartMethodName(startMethod.text);//
             scriptCode.gameObject.SetActive(false);
             fileLoader.SaveAnimation(createdAnim);
             EndAnimate();
@@ -292,6 +299,10 @@ namespace AnimArch.Visualization.UI
             {
                 SelectAnimation();
                 StartAnimate();
+                createdAnim = AnimationData.Instance.selectedAnim;
+                scriptCode.text = createdAnim.Code;
+                startClass.text = createdAnim.StartClass;//
+                startMethod.text = createdAnim.StartMethod;//
                 scriptCode.text = AnimationData.Instance.selectedAnim.Code;
                 AnimationData.Instance.RemoveAnim(AnimationData.Instance.selectedAnim);
                 UpdateAnimations();
