@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AnimArch.Visualization.UI;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,7 +71,7 @@ namespace OALProgramControl
                 }
             }
 
-            // ConsolePanel.Instance.YieldOutput(Result);
+            ConsolePanel.Instance.YieldOutput(Result);
 
             return true;
         }

@@ -251,7 +251,8 @@ namespace AnimArch.Visualization.Diagrams
             // {
             //     
             // }
-            objectInDiagram.Instance.SetAttribute(attr, expr);
+            // TODO - Lukas commented out the below code
+            //objectInDiagram.Instance.SetAttribute(attr, expr);
             var background = objectInDiagram.VisualObject.transform.Find("Background");
             var attributes = background.Find("Attributes");
             attributes.GetComponent<TextMeshProUGUI>().text = "";
