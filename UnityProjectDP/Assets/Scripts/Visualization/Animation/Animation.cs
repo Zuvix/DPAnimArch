@@ -11,6 +11,7 @@ using AnimArch.Visualization.Diagrams;
 using UMSAGL.Scripts;
 using UnityEngine.SceneManagement;
 using Object = System.Object;
+using AnimArch.Visualization.UI;
 
 namespace AnimArch.Visualization.Animating
 {
@@ -31,10 +32,13 @@ namespace AnimArch.Visualization.Animating
         public bool nextStep = false;
         private bool prevStep = false;
         private List<GameObject> Fillers;
+        [HideInInspector]
+        public string ReadValue;
 
         public string startClassName;
         public string startMethodName;
         private Scene _implementsPrefabScene;
+
 
         private void Awake()
         {
@@ -169,6 +173,18 @@ namespace AnimArch.Visualization.Animating
                     objectDiagram.AddListAttributeValue(variableFrom.ReferencedInstanceId,
                         addingToList.AttributeName, addingToList.Item.Evaluate(addingToList.GetSuperScope(), OALProgram.Instance.ExecutionSpace));
 
+                }
+                else if (CurrentCommand.GetType().Equals(typeof(EXECommandRead)))
+                {
+                    BarrierSize = 1;
+                    CurrentBarrierFill = 0;
+
+                    ConsolePanel.Instance.ActivateInputField();
+
+                    yield return StartCoroutine(BarrierFillCheck());
+
+                    ExecutionSuccess = ExecutionSuccess && ((EXECommandRead)CurrentCommand).AssignReadValue(this.ReadValue, Program);
+                    this.ReadValue = null;
                 }
 
                 Success = Success && ExecutionSuccess;
